@@ -8,7 +8,18 @@
         "url": "https://github.com/tweaselORG/autopy.git"
     },
     "license": "MIT",
-    "author": "Benjamin Altpeter <hi@bn.al>",
+    "contributors": [
+        {
+            "name": "Benjamin Altpeter",
+            "email": "hi@bn.al",
+            "url": "https://benjamin-altpeter.de"
+        },
+        {
+            "name": "Lorenz Sieben",
+            "email": "me@lorenz-sieben.com",
+            "url": "https://lorenz-sieben.com"
+        }
+    ],
     "type": "module",
     "main": "dist/index.js",
     "source": "src/index.ts",
@@ -38,7 +49,10 @@
         ]
     },
     "prettier": "@baltpeter/prettier-config",
-    "dependencies": {},
+    "dependencies": {
+        "octokit": "^2.0.14",
+        "semver": "^7.5.1"
+    },
     "devDependencies": {
         "@baltpeter/eslint-config": "2.1.2",
         "@baltpeter/prettier-config": "2.0.0",
