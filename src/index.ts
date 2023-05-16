@@ -1,4 +1,10 @@
+import { decompress as decompressZstd } from '@mongodb-js/zstd';
+import { createHash } from 'crypto';
+import decompress from 'decompress';
+import fse from 'fs-extra';
+import globalCacheDir from 'global-cache-dir';
 import { Octokit } from 'octokit';
+import { join } from 'path';
 import semverCompare from 'semver/functions/compare.js';
 import semverSatifies from 'semver/functions/satisfies';
 import { version as autopyVersion } from '../package.json';
@@ -8,7 +14,7 @@ import { version as autopyVersion } from '../package.json';
 // available version is used.
 export type VersionSpecifier = string | undefined;
 
-export const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
+const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
     const version = versionRange ?? '>= 0';
 
     const targetMap = {
@@ -53,16 +59,18 @@ export const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
             const asset = release.assets
                 .map((a) => ({ ...a, version: assetRegex.exec(a.name)?.groups?.['version'] }))
                 .sort((a, b) => {
+                    if (a.version && b.version) return semverCompare(b.version, a.version);
                     if (a.version) return -1;
                     if (b.version) return 1;
-                    if (a.version && b.version) return semverCompare(b.version, a.version);
                     return 0;
                 })
                 .find((a) => a.version && semverSatifies(a.version, version));
             if (asset) {
                 const checksumAsset = release.assets.find((a) => a.name === `${asset.name}.sha256`);
                 return {
-                    url: asset.browser_download_url,
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    version: asset.version!,
+                    pythonUrl: asset.browser_download_url,
                     checksumUrl: checksumAsset?.browser_download_url,
                 };
             }
@@ -70,4 +78,42 @@ export const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
     }
 
     throw new Error(`No release for Python ${version} found.`);
+};
+
+export const downloadPython = async (versionRange: VersionSpecifier) => {
+    const cacheDir = await globalCacheDir('autopy');
+
+    // Check if we already have a Python installation that satisfies the version range.
+    const existingInstallations = await fse.readdir(join(cacheDir, 'python'));
+    const matchingExistingVersion = existingInstallations
+        .sort((a, b) => semverCompare(b, a))
+        .find((v) => !versionRange || semverSatifies(v, versionRange));
+    if (matchingExistingVersion) {
+        const existingPythonDir = join(cacheDir, 'python', matchingExistingVersion);
+        if (await fse.pathExists(join(existingPythonDir, 'bin', 'python3'))) return existingPythonDir;
+
+        await fse.remove(existingPythonDir);
+    }
+
+    // Otherwise, download this Python version.
+    const { version, pythonUrl, checksumUrl } = await getPythonDownloadLink(versionRange);
+    if (!checksumUrl) throw new Error(`No checksum URL for Python ${version} found.`);
+
+    const pythonArchive = await fetch(pythonUrl).then((res) => res.arrayBuffer());
+    const expectedHash = await fetch(checksumUrl)
+        .then((res) => res.text())
+        .then((t) => t.trim());
+
+    const hash = createHash('sha256').update(Buffer.from(pythonArchive)).digest('hex');
+    if (hash !== expectedHash) throw new Error(`Checksum mismatch: Expected "${expectedHash}", got "${hash}".`);
+
+    const pythonDir = join(cacheDir, 'python', version);
+    await fse.ensureDir(pythonDir);
+
+    const tarOrTarGz = pythonUrl.endsWith('.zst')
+        ? await decompressZstd(Buffer.from(pythonArchive))
+        : Buffer.from(pythonArchive);
+    await decompress(tarOrTarGz, pythonDir, { strip: 1 });
+
+    return pythonDir;
 };
