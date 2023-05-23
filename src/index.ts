@@ -9,7 +9,7 @@ import globalCacheDir from 'global-cache-dir';
 import { Octokit } from 'octokit';
 import { join } from 'path';
 import semverCompare from 'semver/functions/compare.js';
-import semverSatifies from 'semver/functions/satisfies';
+import semverSatifies from 'semver/functions/satisfies.js';
 import { version as autopyVersion } from '../package.json';
 
 /**
@@ -98,6 +98,7 @@ const getPythonDownloadLink = async (versionRange: SemverVersionSpecifier) => {
  */
 export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
     const cacheDir = await globalCacheDir('autopy');
+    await fse.ensureDir(join(cacheDir, 'python'));
 
     // Check if we already have a Python installation that satisfies the version range.
     const existingInstallations = await fse.readdir(join(cacheDir, 'python'));
@@ -207,7 +208,7 @@ export const getVenv = async (options: VenvOptions) => {
             ]);
     }
 
-    const venvBinDir = join(cacheDir, 'venv', process.platform === 'win32' ? 'Scripts' : 'bin');
+    const venvBinDir = join(venvDir, process.platform === 'win32' ? 'Scripts' : 'bin');
     return (file: string, args?: string[], options?: ExecaOptions) =>
         execa(file, args, {
             ...options,
