@@ -96,10 +96,13 @@ running Python commands in the virtual environment.
 
 `Promise`<(`args?`: `string`[], `options?`: `Options`) => `ExecaChildProcess`<`string`\>\>
 
-A function that can be used to execute Python commands in the virtual environment. The function is a wrapper
-  around [`execa`](https://github.com/sindresorhus/execa), it accepts an optional array of arguments and an optional
-  execa options object. For the return value, see: https://github.com/sindresorhus/execa#childprocess.
+A function that can be used to execute Python commands in the virtual environment, with all necessary
+  environment variables set up correctly.
+
+  The function is a wrapper around [`execa`](https://github.com/sindresorhus/execa). It accepts an optional array of
+  arguments and an optional execa options object. For the return value, see:
+  https://github.com/sindresorhus/execa#childprocess.
 
 #### Defined in
 
-[index.ts:174](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L174)
+[index.ts:177](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L177)

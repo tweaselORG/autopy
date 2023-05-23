@@ -167,9 +167,12 @@ export type VenvOptions = {
  *
  * @param options The options for creating or getting the virtual environment. See {@link VenvOptions}.
  *
- * @returns A function that can be used to execute Python commands in the virtual environment. The function is a wrapper
- *   around [`execa`](https://github.com/sindresorhus/execa), it accepts an optional array of arguments and an optional
- *   execa options object. For the return value, see: https://github.com/sindresorhus/execa#childprocess.
+ * @returns A function that can be used to execute Python commands in the virtual environment, with all necessary
+ *   environment variables set up correctly.
+ *
+ *   The function is a wrapper around [`execa`](https://github.com/sindresorhus/execa). It accepts an optional array of
+ *   arguments and an optional execa options object. For the return value, see:
+ *   https://github.com/sindresorhus/execa#childprocess.
  */
 export const getVenv = async (options: VenvOptions) => {
     const cacheDir = await globalCacheDir('autopy');
@@ -207,5 +210,15 @@ export const getVenv = async (options: VenvOptions) => {
             ]);
     }
 
-    return (args?: string[], options?: ExecaOptions) => execa(venvPythonBinary, args, options);
+    const venvBinDir = join(cacheDir, 'venv', process.platform === 'win32' ? 'Scripts' : 'bin');
+    return (args?: string[], options?: ExecaOptions) =>
+        execa(venvPythonBinary, args, {
+            ...options,
+            env: {
+                PYTHONHOME: undefined,
+                VIRTUAL_ENV: venvDir,
+                PATH: `${venvBinDir}${process.platform === 'win32' ? ';' : ':'}${process.env['PATH']}`,
+                ...options?.env,
+            },
+        });
 };
