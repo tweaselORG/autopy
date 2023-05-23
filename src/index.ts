@@ -107,7 +107,14 @@ export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
         .find((v) => !versionRange || semverSatifies(v, versionRange));
     if (matchingExistingVersion) {
         const existingPythonDir = join(cacheDir, 'python', matchingExistingVersion);
-        if (await fse.pathExists(join(existingPythonDir, 'bin', 'python3'))) return existingPythonDir;
+        if (
+            await fse.pathExists(
+                process.platform === 'win32'
+                    ? join(existingPythonDir, 'python.exe')
+                    : join(existingPythonDir, 'bin', 'python3')
+            )
+        )
+            return existingPythonDir;
 
         await fse.remove(existingPythonDir);
     }
