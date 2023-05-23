@@ -81,10 +81,10 @@ ___
 
 ### getVenv
 
-▸ **getVenv**(`options`): `Promise`<(`args?`: `string`[], `options?`: `Options`) => `ExecaChildProcess`<`string`\>\>
+▸ **getVenv**(`options`): `Promise`<(`file`: `string`, `args?`: `string`[], `options?`: `Options`) => `ExecaChildProcess`<`string`\>\>
 
 Creates or gets a virtual environment with the specified Python version and requirements. Returns a function for
-running Python commands in the virtual environment.
+running commands in the virtual environment.
 
 #### Parameters
 
@@ -94,15 +94,12 @@ running Python commands in the virtual environment.
 
 #### Returns
 
-`Promise`<(`args?`: `string`[], `options?`: `Options`) => `ExecaChildProcess`<`string`\>\>
+`Promise`<(`file`: `string`, `args?`: `string`[], `options?`: `Options`) => `ExecaChildProcess`<`string`\>\>
 
 A function that can be used to execute Python commands in the virtual environment, with all necessary
-  environment variables set up correctly.
-
-  The function is a wrapper around [`execa`](https://github.com/sindresorhus/execa). It accepts an optional array of
-  arguments and an optional execa options object. For the return value, see:
-  https://github.com/sindresorhus/execa#childprocess.
+  environment variables set up correctly. The function is a wrapper around
+  [`execa`](https://github.com/sindresorhus/execa).
 
 #### Defined in
 
-[index.ts:177](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L177)
+[index.ts:174](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L174)

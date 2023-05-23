@@ -163,16 +163,13 @@ export type VenvOptions = {
 
 /**
  * Creates or gets a virtual environment with the specified Python version and requirements. Returns a function for
- * running Python commands in the virtual environment.
+ * running commands in the virtual environment.
  *
  * @param options The options for creating or getting the virtual environment. See {@link VenvOptions}.
  *
  * @returns A function that can be used to execute Python commands in the virtual environment, with all necessary
- *   environment variables set up correctly.
- *
- *   The function is a wrapper around [`execa`](https://github.com/sindresorhus/execa). It accepts an optional array of
- *   arguments and an optional execa options object. For the return value, see:
- *   https://github.com/sindresorhus/execa#childprocess.
+ *   environment variables set up correctly. The function is a wrapper around
+ *   [`execa`](https://github.com/sindresorhus/execa).
  */
 export const getVenv = async (options: VenvOptions) => {
     const cacheDir = await globalCacheDir('autopy');
@@ -211,8 +208,8 @@ export const getVenv = async (options: VenvOptions) => {
     }
 
     const venvBinDir = join(cacheDir, 'venv', process.platform === 'win32' ? 'Scripts' : 'bin');
-    return (args?: string[], options?: ExecaOptions) =>
-        execa(venvPythonBinary, args, {
+    return (file: string, args?: string[], options?: ExecaOptions) =>
+        execa(file, args, {
             ...options,
             env: {
                 PYTHONHOME: undefined,
