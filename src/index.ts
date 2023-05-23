@@ -12,12 +12,16 @@ import semverCompare from 'semver/functions/compare.js';
 import semverSatifies from 'semver/functions/satisfies';
 import { version as autopyVersion } from '../package.json';
 
-// TODO: Semver version or range according to https://www.npmjs.com/package/semver. As python-build-standalone doesn't offer all
-// Python versions, one should typically specify a range (usually a tilde or caret range). If not specified, the latest
-// available version is used.
-export type VersionSpecifier = string | undefined;
+/**
+ * A semver version or range that specifies the desired Python version to download or use for a virtual environment. The
+ * version or range should follow the format defined by [semver](https://www.npmjs.com/package/semver). As
+ * [python-build-standalone](https://github.com/indygreg/python-build-standalone) doesn't offer all Python versions, one
+ * should typically specify a range (usually a tilde or caret range). If not specified, the latest available version is
+ * used.
+ */
+export type SemverVersionSpecifier = string | undefined;
 
-const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
+const getPythonDownloadLink = async (versionRange: SemverVersionSpecifier) => {
     const version = versionRange ?? '>= 0';
 
     const targetMap = {
@@ -83,7 +87,16 @@ const getPythonDownloadLink = async (versionRange: VersionSpecifier) => {
     throw new Error(`No release for Python ${version} found.`);
 };
 
-export const downloadPython = async (versionRange: VersionSpecifier) => {
+/**
+ * Downloads and extracts a Python installation that satisfies the given version range from
+ * [python-build-standalone](https://github.com/indygreg/python-build-standalone) releases. The installation is cached
+ * in a global directory and reused if possible.
+ *
+ * @param versionRange A semver version or range that specifies the desired Python version. If not specified, the latest
+ *   available version is used.
+ * @returns The path to the Python installation directory.
+ */
+export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
     const cacheDir = await globalCacheDir('autopy');
 
     // Check if we already have a Python installation that satisfies the version range.
@@ -124,17 +137,40 @@ export const downloadPython = async (versionRange: VersionSpecifier) => {
 // TODO: More thorough check.
 const isVenv = (dir: string) => fse.pathExists(join(dir, 'pyvenv.cfg'));
 
+/** Options for creating or getting a virtual environment with specific requirements. */
 export type VenvOptions = {
+    /** The name of the virtual environment. */
     name: string;
-    pythonVersion: VersionSpecifier;
+    /** The Python version to use for the virtual environment. Passed to {@link downloadPython}. */
+    pythonVersion: SemverVersionSpecifier;
+    /** The list of Python packages and their versions to install in the virtual environment. */
     requirements: {
+        /** The name of the package to install. */
         name: string;
-        // TODO: [PEP 440 version specifier](https://peps.python.org/pep-0440/#version-specifiers).
+        /**
+         * A [PEP 440 version specifier](https://peps.python.org/pep-0440/#version-specifiers) that defines the version
+         * of the package to install.
+         */
         version: string;
     }[];
 
+    /**
+     * Whether to check if the requirements are already satisfied and install them if necessary. Defaults to true. If
+     * false, the virtual environment may not have (all) the specified packages installed.
+     */
     checkRequirements?: boolean;
 };
+
+/**
+ * Creates or gets a virtual environment with the specified Python version and requirements. Returns a function for
+ * running Python commands in the virtual environment.
+ *
+ * @param options The options for creating or getting the virtual environment. See {@link VenvOptions}.
+ *
+ * @returns A function that can be used to execute Python commands in the virtual environment. The function is a wrapper
+ *   around [`execa`](https://github.com/sindresorhus/execa), it accepts an optional array of arguments and an optional
+ *   execa options object. For the return value, see: https://github.com/sindresorhus/execa#childprocess.
+ */
 export const getVenv = async (options: VenvOptions) => {
     const cacheDir = await globalCacheDir('autopy');
     const venvDir = join(cacheDir, 'venv', options.name);
