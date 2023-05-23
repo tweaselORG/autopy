@@ -1,6 +1,9 @@
 import { decompress as decompressZstd } from '@mongodb-js/zstd';
+import { satisfies as pep440Satisfies } from '@renovatebot/pep440';
 import { createHash } from 'crypto';
 import decompress from 'decompress';
+import type { Options as ExecaOptions } from 'execa';
+import { execa } from 'execa';
 import fse from 'fs-extra';
 import globalCacheDir from 'global-cache-dir';
 import { Octokit } from 'octokit';
@@ -116,4 +119,57 @@ export const downloadPython = async (versionRange: VersionSpecifier) => {
     await decompress(tarOrTarGz, pythonDir, { strip: 1 });
 
     return pythonDir;
+};
+
+// TODO: More thorough check.
+const isVenv = (dir: string) => fse.pathExists(join(dir, 'pyvenv.cfg'));
+
+export type VenvOptions = {
+    name: string;
+    pythonVersion: VersionSpecifier;
+    requirements: {
+        name: string;
+        // TODO: [PEP 440 version specifier](https://peps.python.org/pep-0440/#version-specifiers).
+        version: string;
+    }[];
+
+    checkRequirements?: boolean;
+};
+export const getVenv = async (options: VenvOptions) => {
+    const cacheDir = await globalCacheDir('autopy');
+    const venvDir = join(cacheDir, 'venv', options.name);
+
+    const pythonDir = await downloadPython(options.pythonVersion);
+    const globalPythonBinary =
+        process.platform === 'win32' ? join(pythonDir, 'python.exe') : join(pythonDir, 'bin', 'python3');
+
+    if (!(await fse.pathExists(venvDir)) || !(await isVenv(venvDir)))
+        await execa(globalPythonBinary, ['-m', 'venv', venvDir]);
+
+    const venvPythonBinary =
+        process.platform === 'win32' ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python3');
+
+    if (options.checkRequirements !== false) {
+        const installedPackages = await execa(venvPythonBinary, [
+            '-m',
+            'pip',
+            'list',
+            '--local',
+            '--format',
+            'json',
+        ]).then((r) => JSON.parse(r.stdout) as { name: string; version: string }[]);
+        const missingPackages = options.requirements.filter(
+            (r) => !installedPackages.some((p) => p.name === r.name && pep440Satisfies(p.version, r.version))
+        );
+
+        if (missingPackages.length > 0)
+            await execa(venvPythonBinary, [
+                '-m',
+                'pip',
+                'install',
+                ...missingPackages.map((r) => `${r.name}${r.version}`),
+            ]);
+    }
+
+    return (args?: string[], options?: ExecaOptions) => execa(venvPythonBinary, args, options);
 };

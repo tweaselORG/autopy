@@ -1118,6 +1118,11 @@
     picocolors "^1.0.0"
     tslib "^2.5.0"
 
+"@renovatebot/pep440@^2.1.15":
+  version "2.1.15"
+  resolved "https://registry.yarnpkg.com/@renovatebot/pep440/-/pep440-2.1.15.tgz#b481ec1a9f2782debd8f3c787999529a46157019"
+  integrity sha512-zJQ6ZLzgD3HsyyBLnDiviimxfripKHzPYmRqgIHb9Ettre3ivrkaz6F1zbeowf0kRBxB8rh8qit0Ftn4oBsg+w==
+
 "@swc/helpers@^0.4.12":
   version "0.4.14"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.4.14.tgz#1352ac6d95e3617ccb7c1498ff019654f1e12a74"
