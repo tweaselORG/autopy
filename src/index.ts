@@ -142,8 +142,11 @@ export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
     return pythonDir;
 };
 
-// TODO: More thorough check.
-const isVenv = (dir: string) => fse.pathExists(join(dir, 'pyvenv.cfg'));
+const isVenv = async (dir: string) =>
+    (await fse.pathExists(join(dir, 'pyvenv.cfg'))) &&
+    (await fse.pathExists(
+        process.platform === 'win32' ? join(dir, 'Scripts', 'python.exe') : join(dir, 'bin', 'python3')
+    ));
 
 /** Options for creating or getting a virtual environment with specific requirements. */
 export type VenvOptions = {

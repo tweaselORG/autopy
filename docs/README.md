@@ -49,7 +49,7 @@ Options for creating or getting a virtual environment with specific requirements
 
 #### Defined in
 
-[index.ts:149](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L149)
+[index.ts:152](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L152)
 
 ## Functions
 
@@ -102,4 +102,4 @@ A function that can be used to execute Python commands in the virtual environmen
 
 #### Defined in
 
-[index.ts:182](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L182)
+[index.ts:185](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L185)
