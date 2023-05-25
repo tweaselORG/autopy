@@ -13,6 +13,7 @@ autopy
 
 - [downloadPython](README.md#downloadpython)
 - [getVenv](README.md#getvenv)
+- [removeVenv](README.md#removevenv)
 
 ## Type Aliases
 
@@ -103,3 +104,25 @@ A function that can be used to execute Python commands in the virtual environmen
 #### Defined in
 
 [index.ts:185](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L185)
+
+___
+
+### removeVenv
+
+▸ **removeVenv**(`name`): `Promise`<`void`\>
+
+Removes the virtual environment with the specified name.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `name` | `string` | The name of the virtual environment to remove. |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[index.ts:239](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L239)

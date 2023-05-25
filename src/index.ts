@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 import decompress from 'decompress';
 import type { Options as ExecaOptions } from 'execa';
 import { execa } from 'execa';
-import fse from 'fs-extra';
+import fse, { remove } from 'fs-extra';
 import globalCacheDir from 'global-cache-dir';
 import { Octokit } from 'octokit';
 import { join } from 'path';
@@ -230,3 +230,10 @@ export const getVenv = async (options: VenvOptions) => {
             },
         });
 };
+
+/**
+ * Removes the virtual environment with the specified name.
+ *
+ * @param name The name of the virtual environment to remove.
+ */
+export const removeVenv = async (name: string) => remove(join(await globalCacheDir('autopy'), 'venv', name));
