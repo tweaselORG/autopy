@@ -55,8 +55,6 @@ const getPythonDownloadLink = async (versionRange: SemverVersionSpecifier) => {
 
     for await (const { data: releases } of releasesIterator) {
         for (const release of releases) {
-            if (release.draft) continue;
-
             // "Casual users will likely want to use the `install_only` archive, as most users do not need the build
             // artifacts present in the `full` archive."
             const assetRegex = new RegExp(
