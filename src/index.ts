@@ -168,6 +168,12 @@ export type VenvOptions = {
      * false, the virtual environment may not have (all) the specified packages installed.
      */
     checkRequirements?: boolean;
+    /**
+     * Whether to allow upgrading the Python version of the virtual environment if it is already created. Defaults to
+     * true. If false, calling `getVenv()` on an existing venv with an older (non-matching) Python version will throw an
+     * error. If true, the Python version will be upgraded if necessary. This will cause the venv to be recreated.
+     */
+    allowPythonUpgrade?: boolean;
 };
 
 /**
@@ -184,12 +190,31 @@ export const getVenv = async (options: VenvOptions) => {
     const cacheDir = await globalCacheDir('autopy');
     const venvDir = join(cacheDir, 'venv', options.name);
 
-    const pythonDir = await downloadPython(options.pythonVersion);
-    const globalPythonBinary =
-        process.platform === 'win32' ? join(pythonDir, 'python.exe') : join(pythonDir, 'bin', 'python3');
+    // Check whether the potentially existing venv has a matching Python version.
+    if (options.pythonVersion && (await fse.pathExists(venvDir)) && (await isVenv(venvDir))) {
+        const pyvenvCfg = await fse.readFile(join(venvDir, 'pyvenv.cfg'), 'utf-8');
+        const venvPythonVersion = pyvenvCfg
+            .split('\n')
+            .find((l) => l.startsWith('version = '))
+            ?.split('=')[1]
+            ?.trim();
 
-    if (!(await fse.pathExists(venvDir)) || !(await isVenv(venvDir)))
+        if (venvPythonVersion && !semverSatifies(venvPythonVersion, options.pythonVersion)) {
+            if (options.allowPythonUpgrade !== false) await fse.remove(venvDir);
+            else
+                throw new Error(
+                    `The virtual environment "${options.name}" already exists, but has a different Python version (${venvPythonVersion}) than requested (${options.pythonVersion}) and upgrading is not allowed.`
+                );
+        }
+    }
+
+    if (!(await fse.pathExists(venvDir)) || !(await isVenv(venvDir))) {
+        const pythonDir = await downloadPython(options.pythonVersion);
+        const globalPythonBinary =
+            process.platform === 'win32' ? join(pythonDir, 'python.exe') : join(pythonDir, 'bin', 'python3');
+
         await execa(globalPythonBinary, ['-m', 'venv', venvDir]);
+    }
 
     const venvPythonBinary =
         process.platform === 'win32' ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python3');
