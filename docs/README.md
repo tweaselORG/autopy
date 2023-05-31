@@ -43,6 +43,7 @@ Options for creating or getting a virtual environment with specific requirements
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
+| `allowPythonUpgrade?` | `boolean` | Whether to allow upgrading the Python version of the virtual environment if it is already created. Defaults to true. If false, calling `getVenv()` on an existing venv with an older (non-matching) Python version will throw an error. If true, the Python version will be upgraded if necessary. This will cause the venv to be recreated. |
 | `checkRequirements?` | `boolean` | Whether to check if the requirements are already satisfied and install them if necessary. Defaults to true. If false, the virtual environment may not have (all) the specified packages installed. |
 | `name` | `string` | The name of the virtual environment. |
 | `pythonVersion` | [`SemverVersionSpecifier`](README.md#semverversionspecifier) | The Python version to use for the virtual environment. Passed to [downloadPython](README.md#downloadpython). |
@@ -103,7 +104,7 @@ A function that can be used to execute Python commands in the virtual environmen
 
 #### Defined in
 
-[index.ts:183](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L183)
+[index.ts:189](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L189)
 
 ___
 
@@ -125,4 +126,4 @@ Removes the virtual environment with the specified name.
 
 #### Defined in
 
-[index.ts:237](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L237)
+[index.ts:262](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L262)
