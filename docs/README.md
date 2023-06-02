@@ -88,6 +88,9 @@ ___
 Creates or gets a virtual environment with the specified Python version and requirements. Returns a function for
 running commands in the virtual environment.
 
+Note: If you need a specific version of pip, you can specify that in the requirements and it will be installed before
+all other requirements.
+
 #### Parameters
 
 | Name | Type | Description |
@@ -104,7 +107,7 @@ A function that can be used to execute Python commands in the virtual environmen
 
 #### Defined in
 
-[index.ts:189](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L189)
+[index.ts:192](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L192)
 
 ___
 
@@ -126,4 +129,4 @@ Removes the virtual environment with the specified name.
 
 #### Defined in
 
-[index.ts:262](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L262)
+[index.ts:274](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L274)
