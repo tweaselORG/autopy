@@ -180,6 +180,9 @@ export type VenvOptions = {
  * Creates or gets a virtual environment with the specified Python version and requirements. Returns a function for
  * running commands in the virtual environment.
  *
+ * Note: If you need a specific version of pip, you can specify that in the requirements and it will be installed before
+ * all other requirements.
+ *
  * @param options The options for creating or getting the virtual environment. See {@link VenvOptions}.
  *
  * @returns A function that can be used to execute Python commands in the virtual environment, with all necessary
@@ -220,6 +223,13 @@ export const getVenv = async (options: VenvOptions) => {
         process.platform === 'win32' ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python3');
 
     if (options.checkRequirements !== false) {
+        // Some packages require a newer pip version than shipped by python-build-standalone (e.g.
+        // https://github.com/tweaselORG/autopy/issues/5), so if the user pins a pip version, we need to install that
+        // first.
+        const pipVersion = options.requirements.find((r) => r.name === 'pip')?.version;
+        if (pipVersion) await execa(venvPythonBinary, ['-m', 'pip', 'install', `pip${pipVersion}`]);
+
+        // Then, we can proceed with installing the rest of the requirements with the correct pip version.
         const installedPackages = await execa(venvPythonBinary, [
             '-m',
             'pip',
@@ -229,7 +239,9 @@ export const getVenv = async (options: VenvOptions) => {
             'json',
         ]).then((r) => JSON.parse(r.stdout) as { name: string; version: string }[]);
         const missingPackages = options.requirements.filter(
-            (r) => !installedPackages.some((p) => p.name === r.name && pep440Satisfies(p.version, r.version))
+            (r) =>
+                r.name !== 'pip' &&
+                !installedPackages.some((p) => p.name === r.name && pep440Satisfies(p.version, r.version))
         );
 
         if (missingPackages.length > 0)
