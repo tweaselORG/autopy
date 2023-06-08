@@ -8,6 +8,7 @@ import fse, { remove } from 'fs-extra';
 import globalCacheDir from 'global-cache-dir';
 import { Octokit } from 'octokit';
 import { join } from 'path';
+import lockfile from 'proper-lockfile';
 import semverCompare from 'semver/functions/compare.js';
 import semverSatifies from 'semver/functions/satisfies.js';
 import { version as autopyVersion } from '../package.json';
@@ -98,6 +99,8 @@ export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
     const cacheDir = await globalCacheDir('autopy');
     await fse.ensureDir(join(cacheDir, 'python'));
 
+    const releaseLock = await lockfile.lock(join(cacheDir, 'python'), { retries: 20, stale: 120000 });
+
     // Check if we already have a Python installation that satisfies the version range.
     const existingInstallations = await fse.readdir(join(cacheDir, 'python'));
     const matchingExistingVersion = existingInstallations
@@ -111,8 +114,10 @@ export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
                     ? join(existingPythonDir, 'python.exe')
                     : join(existingPythonDir, 'bin', 'python3')
             )
-        )
+        ) {
+            await releaseLock();
             return existingPythonDir;
+        }
 
         await fse.remove(existingPythonDir);
     }
@@ -137,6 +142,7 @@ export const downloadPython = async (versionRange: SemverVersionSpecifier) => {
         : Buffer.from(pythonArchive);
     await decompress(tarOrTarGz, pythonDir, { strip: 1 });
 
+    await releaseLock();
     return pythonDir;
 };
 
@@ -192,6 +198,9 @@ export type VenvOptions = {
 export const getVenv = async (options: VenvOptions) => {
     const cacheDir = await globalCacheDir('autopy');
     const venvDir = join(cacheDir, 'venv', options.name);
+    await fse.ensureDir(venvDir);
+
+    const releaseLock = await lockfile.lock(venvDir, { retries: 25, stale: 240000 });
 
     // Check whether the potentially existing venv has a matching Python version.
     if (options.pythonVersion && (await fse.pathExists(venvDir)) && (await isVenv(venvDir))) {
@@ -252,6 +261,8 @@ export const getVenv = async (options: VenvOptions) => {
                 ...missingPackages.map((r) => `${r.name}${r.version}`),
             ]);
     }
+
+    await releaseLock();
 
     const venvBinDir = join(venvDir, process.platform === 'win32' ? 'Scripts' : 'bin');
     return (file: string, args?: string[], options?: ExecaOptions) =>
