@@ -1,6 +1,6 @@
 {
     "name": "autopy",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Library for depending on Python packages from JavaScript that will automatically manage a venv and download Python and pip dependencies.",
     "bugs": "https://github.com/tweaselORG/autopy/issues",
     "repository": {
