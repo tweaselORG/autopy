@@ -45,6 +45,7 @@ const getPythonDownloadLink = async (versionRange: SemverVersionSpecifier) => {
 
     const octokit = new Octokit({
         userAgent: `autopy/${autopyVersion} (https://github.com/tweaselORG/autopy)`,
+        auth: process.env['GITHUB_TOKEN'],
     });
 
     const releasesIterator = octokit.paginate.iterator(octokit.rest.repos.listReleases, {

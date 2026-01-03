@@ -29,7 +29,7 @@ used.
 
 #### Defined in
 
-[index.ts:23](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L23)
+[index.ts:23](https://github.com/SimonFischer04/autopy/blob/main/src/index.ts#L23)
 
 ___
 
@@ -51,7 +51,7 @@ Options for creating or getting a virtual environment with specific requirements
 
 #### Defined in
 
-[index.ts:156](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L156)
+[index.ts:157](https://github.com/SimonFischer04/autopy/blob/main/src/index.ts#L157)
 
 ## Functions
 
@@ -77,7 +77,7 @@ The path to the Python installation directory.
 
 #### Defined in
 
-[index.ts:98](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L98)
+[index.ts:99](https://github.com/SimonFischer04/autopy/blob/main/src/index.ts#L99)
 
 ___
 
@@ -107,7 +107,7 @@ A function that can be used to execute Python commands in the virtual environmen
 
 #### Defined in
 
-[index.ts:198](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L198)
+[index.ts:199](https://github.com/SimonFischer04/autopy/blob/main/src/index.ts#L199)
 
 ___
 
@@ -129,4 +129,4 @@ Removes the virtual environment with the specified name.
 
 #### Defined in
 
-[index.ts:285](https://github.com/tweaselORG/autopy/blob/main/src/index.ts#L285)
+[index.ts:286](https://github.com/SimonFischer04/autopy/blob/main/src/index.ts#L286)
